@@ -52,7 +52,6 @@ Input:
 {clinical_trials_scraped_data}
 {euctr_scraped_data}
 {pubmed_scraped_data}
-{google_patent_abstracts}
 """
     )
 ]
@@ -162,7 +161,6 @@ def process_clinical_euctr_batch(target_molecule, clinical_trials_scraped_data, 
                     "clinical_trials_scraped_data": clinical_batch,
                     "euctr_scraped_data": "",
                     "pubmed_scraped_data": "",
-                    "google_patent_abstracts": "",
                     "format": "json"
                 }
             )
@@ -200,7 +198,6 @@ def process_clinical_euctr_batch(target_molecule, clinical_trials_scraped_data, 
                     "clinical_trials_scraped_data": "",
                     "euctr_scraped_data": euctr_batch,
                     "pubmed_scraped_data": "",
-                    "google_patent_abstracts": "",
                     "format": "json"
                 }
             )
@@ -242,7 +239,6 @@ def process_pubmed_batch(target_molecule, pubmed_batch):
                 "clinical_trials_scraped_data": "",
                 "euctr_scraped_data": "",
                 "pubmed_scraped_data": pubmed_batch,
-                "google_patent_abstracts": "",
                 "format": "json"
             }
         )
@@ -266,61 +262,6 @@ def process_pubmed_batch(target_molecule, pubmed_batch):
         fallback_entry["_processing_error"] = True
         fallback_entry["_error_message"] = str(e)
         return [fallback_entry]
-
-def process_patent_abstracts_batch(target_molecule, patent_abstracts_batch):
-    """Process Google Patent Abstracts data in a batch"""
-    prompt = ChatPromptTemplate.from_messages(messages=messages)
-    chain = prompt | llm | StrOutputParser()
-    
-    try:
-        result = rate_limited_api_call(
-            chain.invoke,
-            {
-                "target": target_molecule,
-                "clinical_trials_scraped_data": "",
-                "euctr_scraped_data": "",
-                "pubmed_scraped_data": "",
-                "google_patent_abstracts": patent_abstracts_batch,
-                "format": "json"
-            }
-        )
-        
-        fallback_template = create_fallback_clinical_entry(target_molecule, "Patent Abstracts")
-        
-        parsed_result = graceful_json_parse(
-            result, 
-            fallback_template, 
-            "Patent Abstracts Batch"
-        )
-        
-        required_fields = ["drug_name", "phase", "status", "modality", "sponsor", "indication", "mechanism_of_action"]
-        valid_entries = extract_valid_entries(parsed_result, required_fields)
-        
-        return valid_entries
-        
-    except Exception as e:
-        print(f"Error processing patent abstracts batch: {str(e)}")
-        fallback_entry = create_fallback_clinical_entry(target_molecule, "Patent Abstracts")
-        fallback_entry["_processing_error"] = True
-        fallback_entry["_error_message"] = str(e)
-        return [fallback_entry]
-
-def split_patent_abstracts_data(patent_abstracts_data, batch_size=10):
-    """Split patent abstracts data into smaller batches to avoid token limit"""
-    if not patent_abstracts_data:
-        return []
-    if isinstance(patent_abstracts_data, str):
-        try:
-            patent_abstracts_data = json.loads(patent_abstracts_data)
-        except json.JSONDecodeError:
-            return [patent_abstracts_data]
-    if not isinstance(patent_abstracts_data, list):
-        return [patent_abstracts_data]
-    batches = []
-    for i in range(0, len(patent_abstracts_data), batch_size):
-        batch = patent_abstracts_data[i:i + batch_size]
-        batches.append(batch)
-    return batches
 
 def combine_results(batch_results):
     """Combine results from multiple batches with enhanced error handling"""
@@ -367,7 +308,6 @@ def analyze_scrapped_data(state : dict) -> dict:
         clinical_trials_scraped_data = state.get("clinical_trials_scraped_data")
         euctr_scraped_data = state.get("euctr_scraped_data")
         pubmed_scraped_data = state.get("pubmed_scraped_data")
-        google_patent_abstracts = state.get("google_patent_abstracts")
         
         batch_results = []
         
@@ -411,27 +351,6 @@ def analyze_scrapped_data(state : dict) -> dict:
                     batch_results.append(fallback_entry)
                     continue
 
-        # Process Google Patent Abstracts data in smaller batches
-        if google_patent_abstracts:
-            patent_abstracts_batches = split_patent_abstracts_data(google_patent_abstracts, batch_size=10)
-            print(f"Split google patent abstracts data into {len(patent_abstracts_batches)} batches")
-            
-            for i, patent_abstracts_batch in enumerate(patent_abstracts_batches):
-                print(f"Processing Google Patent Abstracts batch {i+1}/{len(patent_abstracts_batches)}")
-                try:
-                    batch_result = process_patent_abstracts_batch(target_molecule, patent_abstracts_batch)
-                    batch_results.extend(batch_result)
-                    print(f"Google Patent Abstracts batch {i+1} processed successfully")
-                except Exception as e:
-                    print(f"Error processing Google Patent Abstracts batch {i+1}: {str(e)}")
-                    # Add fallback entry for failed batch
-                    fallback_entry = create_fallback_clinical_entry(target_molecule, "Patent Abstracts")
-                    fallback_entry["_processing_error"] = True
-                    fallback_entry["_batch"] = i+1
-                    fallback_entry["_error_message"] = str(e)
-                    batch_results.append(fallback_entry)
-                    continue
-        
         # Combine results with enhanced error handling
         combined_results = combine_results(batch_results)
         

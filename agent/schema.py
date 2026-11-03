@@ -3,8 +3,6 @@ from pydantic import BaseModel
 
 class Analysis(TypedDict):
     target:Optional[str]
-    patents_query_result:Optional[str]
-    google_patent_abstracts:Optional[str]
     clinical_trials_scraped_data:Optional[str]
     euctr_scraped_data:Optional[str]
     pubmed_scraped_data:Optional[str]

@@ -32,11 +32,10 @@ Target Input → Scraper → Analyzer → Normalizer → Scorer → Final Report
 ### 2. Four-Stage Processing Pipeline
 
 #### Stage 1: Data Scraping
-For Data scraping, we are using Four primary sources:
+For Data scraping, we are using three primary sources:
 - **ClinicalTrials.gov**: US and international clinical trials
 - **EUCTR**: European Union clinical trials register
 - **PubMed**: Biomedical literature for drug development publications
-- **Google Patents**: Extracts patent publication numbers from the initial patent query results, then scrapes abstracts and metadata for each patent using a custom extraction tool. This enables the system to analyze the intellectual property landscape alongside clinical and scientific data.
 
 > **Note:** We do not use any third-party scraping services like Firecrawl or GPT-based scrapers. Instead, we have identified and reverse-engineered the APIs ourselves by inspecting network activity (e.g., using browser network tabs). We handle the different types of responses from each source appropriately, and finally convert all collected data into a unified JSON format for downstream processing.
 
@@ -93,9 +92,6 @@ The result is a structured, easy-to-use summary of drug information.
    - **Limits**: 500 articles per query (configurable)
    - **Processing**: Batch processing for large result sets
 
-4. **Google Patents**
-   - **Coverage**: Global database of patents, including biomedical, pharmaceutical, and biotech innovations
-   - **Access Method**: Custom scraper or API to extract metadata and full-text when available
 
 
 ### Data Quality Assurance
@@ -195,10 +191,9 @@ The system identifies strategic opportunities through:
 ### Enhancement Opportunities
 
 1. **Real-Time Updates**: Integration with news APIs and SEC filings
-2. **Competitive Intelligence**: Patent landscape analysis
-3. **Market Sizing**: Integration with epidemiological data
-4. **Predictive Modeling**: Machine learning for development success prediction
-5. **Expert Validation**: Human expert review workflows
+2. **Market Sizing**: Integration with epidemiological data
+3. **Predictive Modeling**: Machine learning for development success prediction
+4. **Expert Validation**: Human expert review workflows
 
 ## Installation & Usage
 

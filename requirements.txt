@@ -4,6 +4,5 @@ langgraph
 dotenv
 pymed_paperscraper
 tiktoken
-bs4
 langchain_google_genai
 streamlit
