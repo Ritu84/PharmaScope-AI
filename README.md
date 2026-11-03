@@ -1,4 +1,6 @@
-# Competitive Landscape Analysis Tool
+# PharmaScope AI
+
+**AI-powered competitive landscape analysis for drug targets**
 
 An AI-powered system for analyzing competitive landscapes in drug development, focusing on specific molecular targets. This tool automates the collection, analysis, and scoring of therapeutic assets to provide comprehensive competitive intelligence for pharmaceutical research and development.
 
@@ -246,7 +248,7 @@ Enter your target molecule when prompted (e.g., "CD47", "KRAS", "PD-1").
 
 ### File Structure
 ```
-competitive_landscape/
+PharmaScope-AI/
 ├── agent/                # AI agent system
 │   ├── workflow.py       # Main orchestration logic
 │   ├── schema.py         # Data models
