@@ -3,7 +3,7 @@ import json
 import os
 
 def fetch_pubmed_articles(query, max_results=500):
-    pubmed = PubMed(tool="MyTool", email="rsharma114962@gmail.com")
+    pubmed = PubMed(tool="PharmaScope-AI", email="rsharma114962@gmail.com")
     results = pubmed.query(query, max_results=max_results)
     articles = []
     for article in results:

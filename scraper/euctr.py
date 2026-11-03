@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def fetch_euctr_data(target: str):
     url = f"https://www.clinicaltrialsregister.eu/ctr-search/rest/download/summary?query={target}&mode=current_page"
     try:
-        response = requests.get(url, headers={"User-Agent": "MyApp/1.0 (adarsh@example.com)"})
+        response = requests.get(url, headers={"User-Agent": "PharmaScope-AI/1.0 (rsharma114962@gmail.com)"})
         response.raise_for_status()
         output_dir = "output/scraper-results"
         os.makedirs(output_dir, exist_ok=True)

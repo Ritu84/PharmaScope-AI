@@ -261,3 +261,7 @@ PharmaScope-AI/
 ---
 
 *This tool is designed for competitive intelligence and research purposes. Results should be validated with additional sources and expert analysis before making strategic decisions.*
+
+## Author
+
+**Ritu Sharma** · [GitHub](https://github.com/Ritu84) · [LinkedIn](https://www.linkedin.com/in/ritu-sharma-a2580222a/)
