@@ -99,3 +99,5 @@ yarn-error.log*
 *.swo
 *.bak
 *.tmp
+# Scraped data, vector index and eval runs
+output/

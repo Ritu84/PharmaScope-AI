@@ -6,3 +6,6 @@ pymed_paperscraper
 tiktoken
 langchain_google_genai
 streamlit
+chromadb
+openai
+pytest

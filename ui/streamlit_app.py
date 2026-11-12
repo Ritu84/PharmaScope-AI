@@ -239,7 +239,7 @@ st.markdown("---")
 st.header("Input")
 
 # single target vs file upload
-tab1, tab2 = st.tabs(["Single Target", "File Upload"])
+tab1, tab2, tab3 = st.tabs(["Single Target", "File Upload", "Ask the Literature (RAG)"])
 
 with tab1:
     target = st.text_input(
@@ -275,6 +275,33 @@ with tab2:
         # File analysis button
         if st.button("Analyze All Targets from File", type="primary"):
             analyze_file_targets(uploaded_file)
+
+with tab3:
+    from rag.cli import scrape_and_index
+    from rag.graph import ask
+    from rag.store import get_collection
+
+    st.markdown("Ask a question about a target. Answers use only retrieved PubMed abstracts and ClinicalTrials.gov records, with citations.")
+    rag_target = st.text_input("Target", value="CD47", key="rag_target")
+    have_index = rag_target.strip() and get_collection(rag_target.strip()).count() > 0
+    if not have_index:
+        st.info("No index for this target yet. Build it first (scrapes PubMed + ClinicalTrials.gov, then embeds).")
+    if st.button("Build / rebuild index", key="rag_index"):
+        with st.spinner("Scraping and embedding... this can take a few minutes on the free tier"):
+            st.success(f"Indexed {scrape_and_index(rag_target.strip())} chunks")
+    question = st.text_input("Question", placeholder="Which anti-CD47 drugs were terminated, and why?", key="rag_q")
+    source = st.selectbox("Search in", ["All sources", "pubmed", "clinicaltrials"], key="rag_source")
+    if st.button("Ask", type="primary", key="rag_ask") and question.strip():
+        with st.spinner("Retrieving and answering..."):
+            r = ask(rag_target.strip(), question.strip(), k=6, source=None if source == "All sources" else source)
+        st.markdown(r["answer"])
+        if r["unsupported_citations"]:
+            st.warning("Cited but not retrieved (possible hallucination): " + ", ".join(r["unsupported_citations"]))
+        st.subheader("Retrieved sources")
+        for c in r["sources"]:
+            sid = c["source_id"]
+            url = f"https://pubmed.ncbi.nlm.nih.gov/{sid[5:]}/" if sid.startswith("PMID:") else f"https://clinicaltrials.gov/study/{sid}"
+            st.markdown(f"**[{sid}]({url})** · {c['title']} · similarity {c['score']}")
 
 # Footer
 st.markdown("---")
