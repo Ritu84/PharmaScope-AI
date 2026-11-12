@@ -197,6 +197,37 @@ The system identifies strategic opportunities through:
 3. **Predictive Modeling**: Machine learning for development success prediction
 4. **Expert Validation**: Human expert review workflows
 
+## Ask the Literature (RAG)
+
+Besides the scoring pipeline, PharmaScope can answer free-form questions about a target from the scraped sources, with citations.
+
+- **Index:** PubMed abstracts and ClinicalTrials.gov records are split into ~180-word chunks (40-word overlap, never cutting a sentence), embedded with Gemini `gemini-embedding-001` (768 dims) and stored in Chroma, one collection per target. Each chunk keeps its PMID or NCT id, source, phase and year.
+- **Ask:** a LangGraph flow (retrieve -> answer). The model may use only the retrieved chunks, must cite `[PMID:...]` / `[NCT...]` after each claim, and says so when the sources don't answer. Citations to sources that were not retrieved are flagged as possible hallucinations. Source text is treated as data, not instructions.
+- **Filters:** search all sources, only PubMed or only trials.
+
+```bash
+python -m rag.cli index CD47
+python -m rag.cli ask CD47 "Which anti-CD47 trials were terminated?"
+python -m rag.evaluate CD47 --n 30     # retrieval + citation eval
+pytest tests/test_rag.py               # offline tests, no API calls
+```
+Or use the "Ask the Literature (RAG)" tab in the Streamlit app. Needs `OPENAI_API_KEY`, `OPENAI_BASE_URL` (Gemini's OpenAI-compatible endpoint) and `LLM_MODEL` in `.env`.
+
+### Evaluation (CD47, Nov 2026)
+
+960 chunks from 495 PubMed abstracts and 64 trials. For 30 randomly sampled chunks, Gemini wrote a paraphrased question each chunk answers; we checked whether retrieval returns that chunk's source.
+
+| Metric | Result |
+|---|---|
+| Retrieval hit@1 | 86.7% (26/30) |
+| Retrieval hit@5 | 90.0% (27/30) |
+| MRR | 0.88 |
+| Answers with a valid citation | 8/10 (the other 2 said the sources didn't answer) |
+| Citations to sources that were never retrieved | 0 |
+| Prompt tokens per question | ~1.5K with RAG vs ~257K to send every source (99.4% less) |
+
+Limits: questions are generated from the chunks, so they are easier than real analyst questions, and one question per chunk can match several similar abstracts. A hand-written question set would be the next step.
+
 ## Installation & Usage
 
 ### Requirements
